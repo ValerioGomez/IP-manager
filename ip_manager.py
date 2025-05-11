@@ -265,5 +265,5 @@ if __name__ == "__main__":
 
 
 #pip install pyinstaller
-#pyinstaller ip_manager.spec
+#
 
