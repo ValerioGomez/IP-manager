@@ -1,0 +1,47 @@
+Write-Host "============================="
+Write-Host "     Menú de Red - Valerio"
+Write-Host "============================="
+Write-Host "1. Conectarse a la red del TRABAJO (IP fija)"
+Write-Host "2. Conectarse a la red de CASA (DHCP)"
+Write-Host "3. Reiniciar adaptador y limpiar DNS"
+Write-Host "4. Salir"
+Write-Host ""
+
+$opcion = Read-Host "Elige una opción [1-4]"
+$adaptador = "Wi-Fi"
+
+switch ($opcion) {
+    "1" {
+        Write-Host "`n🔧 Configurando IP FIJA para red del trabajo..."
+        netsh interface ip set address name=$adaptador static 192.168.1.182 255.255.255.0 192.168.1.1
+
+        # Establecer DNS correctamente con PowerShell
+        $adapterIndex = (Get-NetAdapter -Name $adaptador).ifIndex
+        Set-DnsClientServerAddress -InterfaceIndex $adapterIndex -ServerAddresses ("8.8.8.8", "8.8.4.4")
+
+        Write-Host "✅ Red del trabajo configurada correctamente.`n"
+    }
+    "2" {
+        Write-Host "`n🔧 Activando DHCP para red de casa..."
+        netsh interface ip set address name=$adaptador source=dhcp
+        netsh interface ip set dns name=$adaptador source=dhcp
+        Write-Host "✅ Red de casa (DHCP) activada correctamente.`n"
+    }
+    "3" {
+        Write-Host "`n♻️ Reiniciando adaptador Wi-Fi y limpiando caché DNS..."
+        netsh interface set interface name=$adaptador admin=disable
+        Start-Sleep -Seconds 3
+        netsh interface set interface name=$adaptador admin=enable
+        ipconfig /release
+        ipconfig /renew
+        ipconfig /flushdns
+        Write-Host "✅ Adaptador reiniciado y DNS limpiado.`n"
+    }
+    "4" {
+        Write-Host "`n👋 Saliendo..."
+        exit
+    }
+    default {
+        Write-Host "`n❌ Opción inválida. Ejecuta el script nuevamente."
+    }
+}
